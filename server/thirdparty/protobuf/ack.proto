@@ -4,94 +4,117 @@ package im.protocol;
 
 import "google/protobuf/timestamp.proto";
 
-// 基础消息类型
 message Ack {
-  // 消息类型
   enum Type {
-    SINGLE_CHAT = 0;
-    GROUP_CHAT = 1;
-    FILE_TRANSFER = 2;
-    ADD_FRIEND = 3;
-    ADD_GROUP = 4;
-    LOGIN_REQUEST = 5;
-    HEARTBEAT = 6;
-    USER_INFO = 7;
-    GROUP_INFO = 8;
+    ACKUREGISTER = 0;
+    ACKGREGISTER = 1;
+    ACKLOGIN = 2;
+    ACKUCHAT = 3;
+    ACKGCHAT = 4;
+    ACKUINFO = 5;
+    ACKGINFO = 6;
+    ACKAFT1 = 7;
+    ACKAFT2 = 8;
+    ACKAGT1 = 9;
+    ACKAGT2 = 10;
+    ACKSUSER = 11;
+    ACKSGROUP = 12;
+    ACKSGMember = 13;
+    HEARTBEAT = 14;
   }
-
-  // 消息类型标识
   Type type = 1;
-
-  // 时间戳
   google.protobuf.Timestamp timestamp = 2;
-
-  // 根据消息类型，只能设置其中一个字段
   oneof content {
-    UserInfo user_info = 3;
-    GroupInfo group_info = 4;
-    FileTransfer file_transfer = 5;
-    AddFriend add_friend = 6;
-    AddGroup add_group = 7;
-    LoginRequest login_request = 8;
-    SingleChat single_chat = 9;
-    GroupChat group_chat = 10;
-    // Heartbeat不需要额外内容，可以省略
+    ackURegister uregister = 3;
+    ackGRegister gregister = 4;
+    ackLogin login = 5;
+    ackUChat uchat = 6;
+    ackGChat gchat = 7;
+    ackUserInfo uinfo = 8;
+    ackGroupInfo ginfo = 9;
+    ackAFriendTo1 aft1 = 10;
+    ackAFriendTo2 aft2 = 11;
+    ackAGroupTo1 agt1 = 12;
+    ackAGroupTo2 agt2 = 13;
+    ackSUser suser = 14;
+    ackSGroup sgroup = 15;
+    ackSGMember sgmember = 16;
   }
 }
-
-message SingleChat {
+message ackURegister {
+  int32 id = 1;
+}
+message ackGRegister {
+  int32 id = 1;
+}
+message ackLogin {
+  int32 id = 1;
+  bool status = 2;
+}
+message ackUChat {
   int32 sender_id = 1;
   int32 receiver_id = 2;
-  string content = 3;
+  string message = 3;
+  int32 time = 4;
 }
-// 单聊消息内容
-message UserInfo {
-  int32 sender_id = 1;
-  int32 receiver_id = 2;
-  string name = 3;
-  string content = 4;
-}
-
-message GroupChat {
-  int32 sender_id = 1;
-  int32 receiver_id = 2;
-  string content = 3;
-}
-
-// 群聊消息内容
-message GroupInfo {
-  int32 sender_id = 1;
-  int32 receiver_id = 2;
-  string name = 3;
-  string content = 4;
-}
-
-// 文件传输消息内容
-message FileTransfer {
-  int32 sender_id = 1;
-  int32 receiver_id = 2;
-  string file_name = 3;
-  bytes file_hash = 4; // 文件哈希，用于验证文件完整性
-  int64 file_size = 5; // 文件大小
-  // ... 可以添加更多文件传输相关字段
-}
-
-// 添加好友消息内容
-message AddFriend {
-  int32 sender_id = 1;
-  int32 receiver_id = 2;
-  string message = 3; // 附加消息，例如请求理由
-}
-message AddGroup {
+message ackGChat {
   int32 sender_id = 1;
   int32 group_id = 2;
-  string message = 3; // 附加消息，例如请求理由
+  string message = 3;
+  int32 time = 4;
 }
-
-// 登陆请求消息内容
-message LoginRequest {
-  bool can_login = 1;
-  // ... 可以添加其他验证字段，如设备信息等
+message ackUserInfo {
+  int32 id = 1;
+  string username = 2;
+  string introduction = 3;
 }
-
-// 心跳包不需要额外内容，因此在Message的oneof中已经省略
+message ackGroupInfo {
+  int32 id = 1;
+  int32 lord_id = 2;
+  string groupname = 3;
+  string introduction = 4;
+}
+message ackAFriendTo1 {
+  int32 sender_id = 1;
+  int32 receiver_id = 2;
+  string message = 3;
+  bool status = 4;
+  int32 time = 5;
+}
+message ackAFriendTo2 {
+  int32 sender_id = 1;
+  int32 receiver_id = 2;
+  string message = 3;
+  int32 time = 4;
+}
+message ackAGroupTo1 {
+  int32 sender_id = 1;
+  int32 group_id = 2;
+  int32 lord_id = 3;
+  string message = 4;
+  bool status = 5;
+  int32 time = 6;
+}
+message ackAGroupTo2 {
+  int32 sender_id = 1;
+  int32 group_id = 2;
+  int32 lord_id = 3;
+  string message = 4;
+  int32 time = 5;
+}
+message ackSUser {
+  int32 id = 1;
+  string username = 2;
+  string introduction = 3;
+}
+message ackSGroup {
+  int32 id = 1;
+  int32 lord_id = 2;
+  string groupname = 3;
+  string introduction = 4;
+}
+message ackSGMember {
+  int32 id = 1;
+  string username = 2;
+  string introduction = 3;
+}

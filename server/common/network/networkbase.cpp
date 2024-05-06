@@ -60,7 +60,7 @@ NetworkBase::NetworkBase( NetworkBase&& other )
 
 NetworkBase::~NetworkBase()
 {
-//    LOG_INFO << m_ip << ":" << m_port << ", " << m_fd << " diconnected." << LOG_ENDL;
+    LOG_INFO << m_ip << ":" << m_port << ", " << m_fd << " diconnected." << LOG_ENDL;
     release( false );
 }
 
@@ -154,7 +154,7 @@ bool NetworkBase::setup()
             break;
     }
 
-    LOG_INFO << "connecting to " << m_ip << ":" << m_port << LOG_ENDL;
+//    LOG_INFO << "connecting to " << m_ip << ":" << m_port << LOG_ENDL;
     if( !success )
     {
         release( false );
@@ -306,7 +306,6 @@ bool NetworkBase::listen()
     {
         return false;
     }
-    std::cout << "listen success\n";
     return true;
 }
 
@@ -399,8 +398,9 @@ bool NetworkBase::joinMulticastGroup()
     return true;
 }
 
-ssize_t NetworkBase::send( const void* data, size_t size )
+ssize_t NetworkBase::send( const char* data, size_t size )
 {
+//    int res = ::write(m_fd, data, size);
     ssize_t res = ::send( m_fd, data, size, 0 );
     if( res < 0 )
     {
@@ -408,6 +408,10 @@ ssize_t NetworkBase::send( const void* data, size_t size )
                   << LOG_ENDL;
     }
     return res;
+}
+
+void NetworkBase::setDelConnCallBack(std::function<void(NetworkBase*)> cb) {
+    delConnCallback = cb;
 }
 
 ssize_t NetworkBase::recv( char* buf, size_t bufsize )
@@ -419,6 +423,9 @@ ssize_t NetworkBase::recv( char* buf, size_t bufsize )
                   << LOG_ENDL;
         return -1;
     }
+//    else if (res == 0) {
+//        delConnCallback(this);
+//    }
     return res;
 }
 

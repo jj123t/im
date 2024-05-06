@@ -5,8 +5,11 @@
 #include "acceptor.h"
 #include "channel.h"
 
+const std::string IP = "127.0.0.1";
+const int PORT = 9000;
+
 Acceptor::Acceptor(EventLoop* _loop) : loop(_loop), networkBase(nullptr), acceptChannel(nullptr) {
-    networkBase = new NetworkBase("127.0.0.1", 9000, NetworkType::TCPSERVER);
+    networkBase = new NetworkBase(IP, PORT, NetworkType::TCPSERVER);
     networkBase->listen();
     acceptChannel = new Channel( loop, networkBase->getFd());
     std::function<void()> cb = std::bind(&Acceptor::acceptConnection, this);

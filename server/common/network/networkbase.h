@@ -18,6 +18,7 @@
 #include <cassert>
 #include <cstring>
 #include <netinet/tcp.h>
+#include <functional>
 
 enum NetworkType : int
 {
@@ -61,7 +62,7 @@ public:
     int accept();
     int accept( struct sockaddr_in& clnt_addr );
     NetworkBasePtr accept( int sessionid );
-    ssize_t send( const void* data, size_t size );
+    ssize_t send( const char* data, size_t size );
     ssize_t sendTo( struct sockaddr_in& sendAddr, const void* data, size_t size );
     ssize_t recv( char* buf, size_t bufsize );
     ssize_t recvFrom( struct sockaddr_in& recvAddr, char* buf, size_t bufsize );
@@ -75,6 +76,7 @@ public:
     bool setLinger();
     void setSessionID( int id );
     int getID();
+    void setDelConnCallBack(std::function<void(NetworkBase*)>);
 private:
     bool create();
     bool bind();
@@ -92,6 +94,7 @@ private:
     std::string m_sourceIP;  ///< 组播的源地址
     std::string m_interface; ///< 组播的网卡地址
     struct sockaddr_in m_socketAddr; ///< socket地址
+    std::function<void(NetworkBase*)> delConnCallback;
 };
 
 #endif //IM_NETWORKBASE_H

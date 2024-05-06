@@ -4,89 +4,98 @@ package im.protocol;
 
 import "google/protobuf/timestamp.proto";
 
-// 基础消息类型
 message Message {
-    // 消息类型
     enum Type {
-        SINGLE_CHAT = 0;
-        GROUP_CHAT = 1;
-        FILE_TRANSFER = 2;
-        ADD_FRIEND = 3;
-        ADD_GROUP = 4;
-        SEARCH_USER = 5;
-        SEARCH_GROUP = 6;
-        LOGIN_REQUEST = 7;
-        HEARTBEAT = 8;
+        UREGISTER = 0;
+        GREGISTER = 1;
+        LOGIN = 2;
+        UCHAT = 3;
+        GCHAT = 4;
+        AFF1 = 5;
+        AFF2 = 6;
+        AGF1 = 7;
+        AGF2 = 8;
+        SUSER = 9;
+        SGROUP = 10;
+        HEARTBEAT = 11;
     }
-
-    // 消息类型标识
     Type type = 1;
-
-    // 时间戳
     google.protobuf.Timestamp timestamp = 2;
-
-    // 根据消息类型，只能设置其中一个字段
     oneof content {
-        SingleChat single_chat = 3;
-        GroupChat group_chat = 4;
-        FileTransfer file_transfer = 5;
-        AddFriend add_friend = 6;
-        AddGroup add_group = 7;
-        SearchUser search_user = 8;
-        SearchGroup search_group = 9;
-        LoginRequest login_request = 10;
-        // Heartbeat不需要额外内容，可以省略
+        URegister uregister = 3;
+        GRegister gregister = 4;
+        Login login = 5;
+        UChat uchat = 6;
+        GChat gchat = 7;
+        AFriendFrom1 aff1 = 8;
+        AFriendFrom2 aff2 = 9;
+        AGroupFrom1 agf1 = 10;
+        AGroupFrom2 agf2 = 11;
+        SUser suser = 12;
+        SGroup sgroup = 13;
+        HeartBeat heartbeat = 14;
     }
 }
-
-// 单聊消息内容
-message SingleChat {
+message HeartBeat {
+    int32 id = 1;
+}
+message Login {
+    int32 user_id = 1;
+    string password = 2;
+}
+message URegister {
+    string username = 1;
+    string password = 2;
+    string introduction = 3;
+}
+message GRegister {
+    int32 lord_id = 1;
+    string groupname = 2;
+    string introduction = 3;
+}
+message UChat {
     int32 sender_id = 1;
     int32 receiver_id = 2;
-    string content = 3;
+    string message = 3;
+    int32 time = 4;
 }
-
-// 群聊消息内容
-message GroupChat {
+message GChat {
     int32 sender_id = 1;
     int32 group_id = 2;
-    string content = 3;
+    string message = 3;
+    int32 time = 4;
 }
-
-// 文件传输消息内容
-message FileTransfer {
+message AFriendFrom1 {
     int32 sender_id = 1;
     int32 receiver_id = 2;
-    string file_name = 3;
-    bytes file_hash = 4; // 文件哈希，用于验证文件完整性
-    int64 file_size = 5; // 文件大小
-    // ... 可以添加更多文件传输相关字段
+    string message = 3;
+    int32 time = 4;
 }
-
-// 添加好友消息内容
-message AddFriend {
+message AFriendFrom2 {
     int32 sender_id = 1;
     int32 receiver_id = 2;
-    string message = 3; // 附加消息，例如请求理由
+    bool status = 3;
+    string message = 4;
+    int32 time = 5;
 }
-message AddGroup {
+message AGroupFrom1 {
     int32 sender_id = 1;
     int32 group_id = 2;
-    string message = 3; // 附加消息，例如请求理由
+    string message = 3;
+    int32 time = 4;
 }
-message SearchUser {
+message AGroupFrom2 {
+    int32 sender_id = 1;
+    int32 group_id = 2;
+    bool status = 3;
+    string message = 4;
+    int32 time = 5;
+}
+message SUser {
     int32 sender_id = 1;
     string message = 2;
 }
-message SearchGroup {
+message SGroup {
     int32 sender_id = 1;
-    string message = 2; // 附加消息，例如请求理由
+    string message = 2;
 }
-// 登陆请求消息内容
-message LoginRequest {
-    int32 user_id = 1;
-    string password = 2;
-    // ... 可以添加其他验证字段，如设备信息等
-}
-
-// 心跳包不需要额外内容，因此在Message的oneof中已经省略

@@ -27,17 +27,21 @@ void Server::newConnection(NetworkBase* nb) {
         MsgManager* conn = new MsgManager(subReactors[random], nb);
         std::function<void(NetworkBase*)> callback = std::bind(&Server::deleteConnection, this, std::placeholders::_1);
         conn->setDeleteConnectionCallback(callback);
+        callback = std::bind(&Server::deleteConnection, this, std::placeholders::_1);
+        nb->setDelConnCallBack(callback);
         managers[nb->getFd()] = conn;
     }
 }
 
 Server::~Server(){
-    managers.clear();
-    subReactors.clear();
+//    managers.clear();
+//    subReactors.clear();
 }
 
 void Server::deleteConnection(NetworkBase* nb){
+#ifdef DEBUG
     std::cout << nb->getFd() << " deleteConnection\n";
+#endif
     if(nb->getFd() != -1){
         auto it = managers.find(nb->getFd());
         if(it != managers.end()){

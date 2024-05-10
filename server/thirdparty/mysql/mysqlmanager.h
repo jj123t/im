@@ -62,7 +62,8 @@ public:
     static int userRegister(const std::string& username, const std::string& password, const std::string& introduction = "");
     // 用户登陆返回状态
     static int userLogin(int userId, const std::string& password);
-    static int getUserLastLogin(int userId);
+    static int setUserHB(int userId, int time);
+    static int getUserHB(int userId);
     // 删除个人信息
     static int delUser(int userId);
     // 更新个人信息
@@ -94,7 +95,8 @@ public:
     static int postGroup(int senderId, int groupId, const std::string& message, int time);
     static std::vector<GroupRecord> getGroup(int senderId, int time);
     // 获取群组列表
-    static std::vector<GroupInfo> getGroups(int id);
+    static std::vector<GroupInfo> getGroupsL(int id);
+    static std::vector<GroupInfo> getGroupsU(int id);
     // 获取群成员
     static std::vector<UserInfo> getGroupMember(int id);
     // 获取群主

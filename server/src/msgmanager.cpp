@@ -258,10 +258,15 @@ void MsgManager::handleLogin(im::protocol::Message &msg) {
         sendAckUserInfo(userId, uu.id, uu.username, uu.introduction);
     }
     //
-    auto groups = MysqlManager::getGroupMember(userId);
+    auto groups = MysqlManager::getGroupsU(userId);
     for (auto gg : groups) {
-        sendAckGroupInfo(userId, gg.id, userId, gg.username, gg.introduction);
+        sendAckGroupInfo(userId, gg.id, gg.lordId, gg.groupname, gg.introduction);
     }
+        //
+//    auto groups = MysqlManager::getGroupMember(userId);
+//    for (auto gg : groups) {
+//        sendAckGroupInfo(userId, gg.id, userId, gg.username, gg.introduction);
+//    }
 #ifdef DEBUG
     std::cout << "this is a login message !!!\n";
     std::cout << "userId: " << userId << "\n";
@@ -392,21 +397,22 @@ void MsgManager::handleHeartBeat(im::protocol::Message &msg) {
     auto* heartbeat = msg.mutable_heartbeat();
     int id = heartbeat->id();
     // 获取 UChat
-    auto userchat = MysqlManager::getUserChatOne(id, MysqlManager::getUserLastLogin(id), std::time(0));
+    auto userchat = MysqlManager::getUserChatOne(id, MysqlManager::getUserHB(id), std::time(0));
+//    auto userchat = MysqlManager::getUserChatOne(id, MysqlManager::getUserLastLogin(id), std::time(0));
     for (auto uc : userchat) {
         sendAckUChat(id, uc.senderId, uc.receiverId, uc.content, uc.time);
     }
     // 获取好友
-    auto friends = MysqlManager::getFriend(id, MysqlManager::getUserLastLogin(id));
+    auto friends = MysqlManager::getFriend(id, MysqlManager::getUserHB(id));
     for (auto f : friends) {
         sleep(1);
         sendAckAFT2(id, f.senderId, f.receiverId, f.content, f.time);
     }
 
-    auto groups = MysqlManager::getGroups(id);
+    auto groups = MysqlManager::getGroupsL(id);
     // 获取GChat
     for (auto g : groups) {
-        auto groupchat = MysqlManager::getGroupChat(id, g.id, MysqlManager::getUserLastLogin(id), std::time(0));
+        auto groupchat = MysqlManager::getGroupChat(id, g.id, MysqlManager::getUserHB(id), std::time(0));
         for (auto gc: groupchat) {
             sleep(1);
             sendAckGChat(id, gc.senderId, gc.groupId, gc.content, gc.time);
@@ -414,7 +420,7 @@ void MsgManager::handleHeartBeat(im::protocol::Message &msg) {
     }
     // 获取群组
     for (auto g : groups) {
-        auto gq = MysqlManager::getGroup(g.id, MysqlManager::getUserLastLogin(id));
+        auto gq = MysqlManager::getGroup(g.id, MysqlManager::getUserHB(id));
         for (auto r : gq) {
             sendAckAGT2(id, r.senderId, r.groupId, id, r.content, r.time);
         }

@@ -27,7 +27,6 @@ ThreadPool::ThreadPool(int size) : stop(false) {
     }
 }
 ThreadPool::~ThreadPool() {
-    std::cout << "i am ~ThreadPoo\n";
     {
         std::unique_lock<std::mutex> lock(tasks_mtx);
         stop = true;

@@ -183,22 +183,28 @@ bool NetworkBase::create()
             socktype = SOCK_DGRAM;
             break;
         default:
+#ifdef DEBUG
             LOG_ERROR << "socket type not supported." << LOG_ENDL;
+#endif
             return false;
     }
     m_fd = ::socket( AF_INET, socktype, 0 );
     if( m_fd == -1 )
     {
+#ifdef DEBUG
         LOG_ERROR << "create socket fd failed, error: " << ::strerror( errno )
                   << ". error no: " << errno << LOG_ENDL;
+#endif
         return false;
     }
     if( socktype == SOCK_DGRAM )
     {
         if( !setReUseAddr() )
         {
+#ifdef DEBUG
             LOG_ERROR << "set reuse address failed: " << ::strerror( errno )
                       << ". error no: " << LOG_ENDL;
+#endif
             return false;
         }
     }
@@ -209,8 +215,10 @@ bool NetworkBase::bind()
 {
     if( ::bind( m_fd, (struct sockaddr*)&m_socketAddr, sizeof( m_socketAddr ) ) == -1 )
     {
+#ifdef DEBUG
         LOG_ERROR << "bind socket error: " << ::strerror( errno ) << ". (errno: " << errno << ")"
                   << LOG_ENDL;
+#endif
         return false;
     }
     return true;
@@ -225,7 +233,9 @@ bool NetworkBase::setNonBlock( bool nonblock )
         {
             ::close( m_fd );
             m_fd = -1;
+#ifdef DEBUG
             LOG_ERROR << "Set NONBLOCK failed" << LOG_ENDL;
+#endif
             return false;
         }
     }
@@ -236,7 +246,9 @@ bool NetworkBase::setNonBlock( bool nonblock )
         {
             ::close( m_fd );
             m_fd = -1;
+#ifdef DEBUG
             LOG_ERROR << "Set NONBLOCK failed" << LOG_ENDL;
+#endif
             return false;
         }
     }
@@ -251,7 +263,9 @@ bool NetworkBase::setNoDelay( bool nodelay )
             m_fd, IPPROTO_TCP, TCP_NODELAY, reinterpret_cast<const char*>( &val ), sizeof( val ) );
     if( ret < 0 )
     {
+#ifdef DEBUG
         LOG_ERROR << "client: " << m_fd << " set to TCP_NODELAY failed: " << ret << LOG_ENDL;
+#endif
         return false;
     }
     return true;
@@ -270,7 +284,9 @@ bool NetworkBase::setSockaddrIn()
     {
         if( ::inet_pton( AF_INET, m_ip.c_str(), &m_socketAddr.sin_addr ) <= 0 )
         {
+#ifdef DEBUG
             LOG_ERROR << "inet_pton error for " << m_ip << LOG_ENDL;
+#endif
             return false;
         }
     }
@@ -284,7 +300,9 @@ bool NetworkBase::setReUseAddr()
     {
         ::close( m_fd );
         m_fd = -1;
+#ifdef DEBUG
         LOG_ERROR << "set udp reuseable failed" << errno << LOG_ENDL;
+#endif
         return false;
     }
     return true;
@@ -313,8 +331,10 @@ bool NetworkBase::connect()
 {
     if( ::connect( m_fd, (struct sockaddr*)&m_socketAddr, sizeof( m_socketAddr ) ) < 0 )
     {
+#ifdef DEBUG
         LOG_ERROR << "connect error: " << ::strerror( errno ) << ". (errno: " << errno << ")"
                   << LOG_ENDL;
+#endif
         return false;
     }
     return true;
@@ -324,7 +344,9 @@ bool NetworkBase::release( bool initiator )
 {
     if( m_fd != -1 )
     {
+#ifdef DEBUG
         LOG_INFO << "releasing socket " << m_fd << LOG_ENDL;
+#endif
         if( m_type == TCPTRANSMISSION && !initiator )
         {
             std::array<char,1024> tmpbuf;
@@ -338,7 +360,9 @@ bool NetworkBase::release( bool initiator )
         }
         if( ::close( m_fd ) != 0 )
         {
+#ifdef DEBUG
             LOG_ERROR << "socket got an abnormal shutdown " << m_fd << LOG_ENDL;
+#endif
             ::shutdown( m_fd, SHUT_RDWR );
             m_fd = -1;
             return false;
@@ -356,26 +380,34 @@ bool NetworkBase::joinMulticastGroup()
     assert( m_type == MULTICASTRECEIVER || m_type == MULTICASTSENDER );
     if( m_interface.empty() )
     {
+#ifdef DEBUG
         LOG_ERROR << "multicast needs interface ip, or you can just use udp socket." << LOG_ENDL;
+#endif
         return false;
     }
     if( m_sourceIP.empty() )
     {
+#ifdef DEBUG
         LOG_INFO << "IGMP v2" << LOG_ENDL;
+#endif
         struct ip_mreq mreq;
         mreq.imr_multiaddr.s_addr = inet_addr( m_ip.c_str() );
         mreq.imr_interface.s_addr = inet_addr( m_interface.c_str() );
         int err = ::setsockopt( m_fd, IPPROTO_IP, IP_ADD_MEMBERSHIP, &mreq, sizeof( mreq ) );
         if( err < 0 )
         {
+#ifdef DEBUG
             LOG_ERROR << " ERR:setsockopt(): IP_ADD_MEMBERSHIP error: " << errno << LOG_ENDL;
+#endif
             release( false );
             return false;
         }
     }
     else
     {
+#ifdef DEBUG
         LOG_INFO << "IGMP v3" << LOG_ENDL;
+#endif
         struct ip_mreq_source GroupInfo;
         ::memset( &GroupInfo, 0x00, sizeof( GroupInfo ) );
         GroupInfo.imr_multiaddr.s_addr = ::inet_addr( m_ip.c_str() );
@@ -387,14 +419,18 @@ bool NetworkBase::joinMulticastGroup()
                           (char*)&GroupInfo,
                           sizeof( GroupInfo ) ) != 0 )
         {
+#ifdef DEBUG
             LOG_ERROR << " setsockopt fail IP_ADD_SOURCE_MEMBERSHIP, " << m_ip << " " << m_sourceIP
                       << " " << m_interface << " " << LOG_ENDL;
+#endif
             release( false );
             return false;
         }
     }
+#ifdef DEBUG
     LOG_INFO << m_fd << ":Increment Add Membership:" << m_ip.c_str() << " port:" << m_port
              << LOG_ENDL;
+#endif
     return true;
 }
 
@@ -404,8 +440,10 @@ ssize_t NetworkBase::send( const char* data, size_t size )
     ssize_t res = ::send( m_fd, data, size, 0 );
     if( res < 0 )
     {
+#ifdef DEBUG
         LOG_ERROR << "send error: " << ::strerror( errno ) << ". (errno: " << errno << ")"
                   << LOG_ENDL;
+#endif
     }
     return res;
 }
@@ -419,8 +457,10 @@ ssize_t NetworkBase::recv( char* buf, size_t bufsize )
     ssize_t res = ::recv( m_fd, buf, bufsize, MSG_DONTWAIT );
     if( res < 0 )
     {
+#ifdef DEBUG
         LOG_ERROR << "fd " << m_fd << " recv error: " << ::strerror( errno ) << ". (errno: " << errno << ")"
                   << LOG_ENDL;
+#endif
         return -1;
     }
 //    else if (res == 0) {
@@ -448,8 +488,10 @@ ssize_t NetworkBase::recvFrom( struct sockaddr_in& recvAddr, char* buf, size_t b
     ssize_t res = ::recvfrom( m_fd, buf, bufsize, 0, (struct sockaddr*)&recvAddr, &len );
     if( res < 0 || ( res == 0 && errno != EAGAIN ) )
     {
+#ifdef DEBUG
         LOG_ERROR << "accept failed, error: " << ::strerror( errno ) << ". error no: " << errno
                   << LOG_ENDL;
+#endif
     }
     return res;
 }
@@ -461,12 +503,16 @@ int NetworkBase::accept()
     int res = ::accept( m_fd, (struct sockaddr*)NULL, NULL );
     if( res == -1 )
     {
+#ifdef DEBUG
         LOG_ERROR << "accept failed, error: " << ::strerror( errno ) << ". error no: " << errno
                   << LOG_ENDL;
+#endif
     }
     else
     {
+#ifdef DEBUG
         LOG_INFO << "accepted " << res << LOG_ENDL;
+#endif
     }
 
     return res;
@@ -481,8 +527,10 @@ int NetworkBase::accept( struct sockaddr_in& socketAddr )
     int res = ::accept( m_fd, reinterpret_cast<sockaddr*>( &socketAddr ), &addrSize );
     if( res == -1 )
     {
+#ifdef DEBUG
         LOG_ERROR << "accept failed, error: " << ::strerror( errno ) << ". error no: " << errno
                   << LOG_ENDL;
+#endif
     }
     return res;
 }

@@ -38,10 +38,11 @@ bool MysqlManager::connect() {
 int MysqlManager::userRegister(const std::string& username, const std::string& password, const std::string& introduction) {
     int id = -1;
     try {
-        sql::PreparedStatement* pstmt = con_->prepareStatement("insert into user_info (username, password, introduction) values (?, ?, ?)");
+        sql::PreparedStatement* pstmt = con_->prepareStatement("insert into user_info (username, password, introduction, last_login) values (?, ?, ?, ?)");
         pstmt->setString(1, username);
         pstmt->setString(2, password);
         pstmt->setString(3, introduction);
+        pstmt->setInt(4, std::time(0));
         pstmt->executeUpdate();
         pstmt = con_->prepareStatement("SELECT LAST_INSERT_ID()");
         sql::ResultSet* res = pstmt->executeQuery();
@@ -59,10 +60,10 @@ int MysqlManager::userLogin(int userId, const std::string& password) {
     int id = -1;
     try {
         sql::PreparedStatement* pstmt =
-                con_->prepareStatement("update user_info set last_login = 10 where id = ?");
+//                con_->prepareStatement("update user_info set last_login = 10 where id = ?");
 //        unix_timestamp(now())
-        pstmt->setInt(1, userId);
-        pstmt->executeUpdate();
+//        pstmt->setInt(1, userId);
+//        pstmt->executeUpdate();
         pstmt = con_->prepareStatement("select id from user_info where id = ? and password = ? ");
         pstmt->setInt(1, userId);
         pstmt->setString(2, password);
@@ -77,7 +78,21 @@ int MysqlManager::userLogin(int userId, const std::string& password) {
     return id != -1;
 }
 
-int MysqlManager::getUserLastLogin(int userId) {
+int MysqlManager::setUserHB(int userId, int time) {
+    try {
+        sql::PreparedStatement* pstmt = con_->prepareStatement("update user_info set last_login = ? where id = ?");
+        pstmt->setInt(1, time);
+        pstmt->setInt(2, userId);
+        pstmt->executeUpdate();
+        delete pstmt;
+    } catch (sql::SQLException& e) {
+        std::cout << "MySQL Error: " << e.what() << " (MySQL error code: " << e.getErrorCode() << ", SQLState: " << e.getSQLState() << ")\n";
+        return false;
+    }
+    return true;
+}
+
+int MysqlManager::getUserHB(int userId) {
     int t = -1;
     try {
         sql::PreparedStatement* pstmt = con_->prepareStatement("select last_login from user_info where id = ?");
@@ -380,7 +395,27 @@ std::vector<MysqlManager::GroupRecord> MysqlManager::getGroup(int groupId, int t
     return groupRecord;
 }
 
-std::vector<MysqlManager::GroupInfo> MysqlManager::getGroups(int id) {
+
+std::vector<MysqlManager::GroupInfo> MysqlManager::getGroupsU(int id) {
+    std::vector<GroupInfo> groups;
+    try {
+        sql::PreparedStatement* pstmt = con_->prepareStatement("select * from group_relation where id = ? ");
+        pstmt->setInt(1, id);
+        sql::ResultSet* res = pstmt->executeQuery();
+        while (res->next()) {
+            GroupInfo tmp;
+            int groupId = res->getInt("group_id");
+            tmp = getGroupInfo(groupId);
+            groups.push_back(tmp);
+        }
+        delete pstmt;
+    } catch (sql::SQLException& e) {
+        std::cout << "MySQL Error: " << e.what() << " (MySQL error code: " << e.getErrorCode() << ", SQLState: " << e.getSQLState() << ")\n";
+    }
+    return groups;
+}
+
+std::vector<MysqlManager::GroupInfo> MysqlManager::getGroupsL(int id) {
     std::vector<GroupInfo> groups;
     try {
         sql::PreparedStatement* pstmt = con_->prepareStatement("select * from group_info where lord_id = ? ");
@@ -405,12 +440,12 @@ std::vector<MysqlManager::UserInfo> MysqlManager::getGroupMember(int id) {
         sql::PreparedStatement* pstmt = con_->prepareStatement("select id from group_info where lord_id = ? ");
         pstmt->setInt(1, id);
         sql::ResultSet* res = pstmt->executeQuery();
-        while (res->next()) {
-            UserInfo tmp;
-            int userId = res->getInt("id");
-            tmp = getUserInfo(userId);
-            groupMember.push_back(tmp);
-        }
+//        while (res->next()) {
+//            UserInfo tmp;
+//            int groupId = res->getInt("id");
+//            tmp = getUserInfo(groupId);
+//            groupMember.push_back(tmp);
+//        }
         delete pstmt;
     } catch (sql::SQLException& e) {
         std::cout << "MySQL Error: " << e.what() << " (MySQL error code: " << e.getErrorCode() << ", SQLState: " << e.getSQLState() << ")\n";
@@ -490,7 +525,7 @@ int MysqlManager::delGroupChat(int chatId) {
 std::vector<MysqlManager::UserChatRecord> MysqlManager::getUserChat(int senderId, int receiverId, time_t startTimestamp, time_t endTimestamp) {
     std::vector<MysqlManager::UserChatRecord> userChatRecord;
     try {
-        sql::PreparedStatement* pstmt = con_->prepareStatement("select sender_id, receiver_id, message, time from user_chat where sender_id = ? and receiver_id = ? and  ? <= time and time <=  ?");
+        sql::PreparedStatement* pstmt = con_->prepareStatement("select sender_id, receiver_id, message, time from user_chat where receiver_id = ? and  ? <= time and time <=  ?");
         pstmt->setInt(1, senderId);
         pstmt->setInt(2, receiverId);
         pstmt->setInt(3, startTimestamp);

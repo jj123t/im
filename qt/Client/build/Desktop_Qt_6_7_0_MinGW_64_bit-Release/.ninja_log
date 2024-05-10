@@ -1,0 +1,18 @@
+# ninja log v5
+9	1816	7364543443319933	Client_autogen/timestamp	10ca90bcdc432ea9
+9	1816	7364543443319933	Client_autogen/mocs_compilation.cpp	10ca90bcdc432ea9
+9	1816	7364543443319933	D:/Code/Client/build/Desktop_Qt_6_7_0_MinGW_64_bit-Release/Client_autogen/timestamp	10ca90bcdc432ea9
+9	1816	7364543443319933	D:/Code/Client/build/Desktop_Qt_6_7_0_MinGW_64_bit-Release/Client_autogen/mocs_compilation.cpp	10ca90bcdc432ea9
+1856	6747	7364543493118055	CMakeFiles/Client.dir/common/threading/threadpool.cpp.obj	2fb564deacc7b220
+1851	11052	7364543536542130	CMakeFiles/Client.dir/src/qnchatmessage.cpp.obj	beee4dce707e3d2f
+1881	11215	7364543537866511	CMakeFiles/Client.dir/src/mainwindow.cpp.obj	eaf6690cc237e22
+1868	11254	7364543538505200	CMakeFiles/Client.dir/src/register.cpp.obj	10d3a7cd0028c31b
+1875	11332	7364543539032507	CMakeFiles/Client.dir/src/login.cpp.obj	a668fc4fece1ac80
+1817	11363	7364543539469742	CMakeFiles/Client.dir/Client_autogen/mocs_compilation.cpp.obj	88a1176af5927903
+6749	13909	7364543565154538	CMakeFiles/Client.dir/thirdparty/protobuf/ack.pb.cc.obj	1f5df61ffe527163
+1846	14509	7364543571102710	CMakeFiles/Client.dir/src/eventloop.cpp.obj	7f4956e6c878d1c3
+11054	15335	7364543579272620	CMakeFiles/Client.dir/src/client.cpp.obj	c0ced311c17b8bc7
+1840	15655	7364543582596852	CMakeFiles/Client.dir/main.cpp.obj	5eddea7d57aaa1ad
+1829	16875	7364543594697336	CMakeFiles/Client.dir/common/async/asiotimer.cpp.obj	bb5facc544530d13
+1835	18434	7364543610261384	CMakeFiles/Client.dir/common/network/networkbase.cpp.obj	ff7ae21e0bdea69e
+18435	19960	7364543625395372	Client.exe	cb6741b61f61e97c
